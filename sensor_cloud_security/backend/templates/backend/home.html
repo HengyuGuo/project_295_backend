@@ -1,0 +1,430 @@
+{% extends "backend/base.html" %}
+{% load static %}
+{% block content %}
+
+<body>
+
+<div class="wrapper">
+    <div class="sidebar" data-color="purple" data-image="{% static 'backend/img/sidebar-5.jpg' %}">
+
+        <!--
+
+            Tip 1: you can change the color of the sidebar using: data-color="blue | azure | green | orange | red | purple"
+            Tip 2: you can also add an image using data-image tag
+
+        -->
+
+        <div class="sidebar-wrapper">
+            <div class="logo">
+                <a class="simple-text">
+                    Sensor Network
+                </a>
+            </div>
+
+            <ul class="nav">
+                <li class="active">
+                    <a href="home.html">
+                        <i class="pe-7s-map-marker"></i>
+                        <p>Monitor</p>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+
+    <div class="main-panel">
+        <nav class="navbar navbar-default navbar-fixed">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand">Sensor Cloud Security</a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+                            <a href="app/logout">
+                                Log out
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card ">
+                            <div class="header"></div>
+                            <div class="content">
+                                <div id="googleMap" style="width:100%;height:400px;"></div>
+                            </div>
+                            <div class="footer">
+                                <hr>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="clustersElement">
+                </div>
+
+                {% for cluster in backend_data.clusters %}
+                {% if not forloop.counter|divisibleby:"2" %}
+                <div class="row">
+                    {% endif %}
+
+                    <div class="col-md-6">
+                        <div class="card ">
+                            <div class="header card-cluster-header">
+                                <h4 class="title" onclick="displaySensorsPositionInCluster({{ cluster.id }})">Cluster {{ cluster.id }}</h4>
+                            </div>
+                            <div class="content">
+                                <div class="scrollable-table">
+                                    <table>
+                                        <thead>
+                                        <th>Id</th>
+                                        <th>Type</th>
+                                        <th>Manufacture</th>
+                                        </thead>
+                                        <tbody>
+                                        {% for sensor in backend_data.sensors %}
+                                        {% if sensor.cluster_id_id == cluster.id %}
+                                        {% if sensor.health == 'ok' %}
+                                        <tr onclick="showSensorMessage({{ sensor.id }})">
+                                        {% elif sensor.health == 'warning' %}
+                                        <tr class="warning" onclick="showSensorMessage({{ sensor.id }})">
+                                        {% else %}
+                                        <tr class="error" onclick="showSensorMessage({{ sensor.id }})">
+                                        {% endif %}
+                                            <td>{{ sensor.id }}</td>
+                                            <td>{{ sensor.sensor_type }}</td>
+                                            <td>{{ sensor.manufacture }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    </div>
+
+                                <div class="footer">
+                                    <div class="legend card-cluster-content-footer-legend" onclick="showClusterMessage({{ cluster.id }})">
+                                        Health
+                                        {% if not cluster.operation %}
+                                        <i class="fa fa-circle text-gray"></i>
+                                        {% elif cluster.health == 'ok' %}
+                                        <i class="fa fa-circle text-info col-lg-pull-5"></i>
+                                        {% elif cluster.health == 'bad' %}
+                                        <i class="fa fa-circle text-danger"></i>
+                                        {% else %}
+                                        <i class="fa fa-circle text-warning"></i>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if forloop.counter|divisibleby:"2" %}
+                </div>
+                {% endif %}
+                {% endfor %}
+
+            </div>
+
+        </div>
+        {% include "backend/includes/footer.html" %}
+    </div>
+</div>
+
+</body>
+<input type="hidden" id="allData" value="{{ backend_data.datas }}">
+{% include "backend/includes/requiredscripts.html" %}
+
+<script type="text/javascript">
+
+    function getAllSensorsClustersData() {
+        var apiUrl = URL + '/app/all_clusters_sensors';
+        $.get(apiUrl, function(data){
+            allData = JSON.parse(data);
+        });
+    }
+    function showClusterMessage(clusterId) {
+        var cluster = null;
+        for (var i = 0; i < allData.sensors.length; i++){
+            if (allData.clusters[i].id === clusterId) {
+                cluster = allData.clusters[i];
+                break;
+            }
+        }
+        if (cluster === null) {
+            return;
+        }
+        var message = cluster.message;
+        if (message.length > 0 && cluster.operation) {
+            bootbox.dialog({
+                title: "Status",
+                message: message,
+                buttons: {
+                    "Reset": {
+                        label: "Reset",
+                        className: "btn btn-danger",
+                        callback: function () {
+                            cluster.health = 'ok';
+                            alert("callback from reset");
+                        }
+                    },
+                    "Operation": {
+                        label: "On/Off",
+                        className: "btn btn-primary",
+                        callback: function () {
+                            clusterSwitch(clusterId);
+                        }
+                    },
+                    "Close": {
+                        label: "Close",
+                        className: "btn btn-primary"
+                    }
+                }
+            });
+        }else{
+            message = "ok";
+            if (!cluster.operation) {
+                message = "cluster is off";
+            }
+            bootbox.dialog({
+                title: "Status",
+                message: message,
+                buttons: {
+                    "Operation": {
+                        label: "On/Off",
+                        className: "btn btn-primary",
+                        callback: function() {
+                            clusterSwitch(clusterId);
+                        }
+                    },
+                    "Close": {
+                        label: "Close",
+                        className: "btn btn-primary"
+                    }
+                }
+            });
+        }
+    }
+    function sensorSwitch(sensorId) {
+        var sensor = null;
+        for (var i = 0; i < allData.sensors.length; i++){
+            if (allData.sensors[i].id === sensorId) {
+                sensor = allData.sensors[i];
+                break;
+            }
+        }
+        if (sensor === null) {
+            return;
+        }
+        sensor['operation'] = !sensor['operation'];
+        var apiUrl = URL + '/app/sensors/' + sensorId;
+        $.put(apiUrl, JSON.stringify(sensor));
+    }
+    function clusterSwitch(clusterId) {
+        var cluster = null;
+        for (var i = 0; i < allData.clusters.length; i++){
+            if (allData.clusters[i].id === clusterId) {
+                cluster = allData.clusters[i];
+                break;
+            }
+        }
+        if (cluster === null) {
+            return;
+        }
+        cluster['operation'] = !cluster['operation'];
+        var apiUrl = URL + '/app/clusters/' + clusterId;
+        $.put(apiUrl, JSON.stringify(cluster));
+    }
+    function showSensorMessage(sensorId) {
+        var sensor = null;
+        for (var i = 0; i < allData.sensors.length; i++){
+            if (allData.sensors[i].id === sensorId) {
+                sensor = allData.sensors[i];
+                break;
+            }
+        }
+        if (sensor === null) {
+            return;
+        }
+        for (var i = 0; i < allData.clusters.length; i++) {
+            if (sensor.cluster_id_id === allData.clusters[i].id && !allData.clusters[i].operation) {
+                return;
+            } else if (sensor.cluster_id_id === allData.clusters[i].id) {
+                break;
+            }
+        }
+        displaySensorPosition(sensorId);
+        var message = sensor.message;
+        if (message.length > 0 && sensor.operation) {
+            bootbox.dialog({
+                title: "Status",
+                message: message,
+                buttons: {
+                    "Reset": {
+                        label: "Reset",
+                        className: "btn btn-danger",
+                        callback: function () {
+                            cluster.health = 'ok';
+                            alert("callback from reset");
+                        }
+                    },
+                    "Operation": {
+                        label: "On/Off",
+                        className: "btn btn-primary",
+                        callback: function () {
+                            sensorSwitch(sensorId);
+                        }
+                    },
+                    "Close": {
+                        label: "Close",
+                        className: "btn btn-primary"
+                    }
+                }
+            });
+        }else{
+            message = "ok";
+            if (!sensor.operation) {
+                message = "Sensor is off";
+            }
+            bootbox.dialog({
+                title: "Status",
+                message: message,
+                buttons: {
+                    "Operation": {
+                        label: "On/Off",
+                        className: "btn btn-primary",
+                        callback: function() {
+                            sensorSwitch(sensorId);
+                        }
+                    },
+                    "Close": {
+                        label: "Close",
+                        className: "btn btn-primary"
+                    }
+                }
+            });
+        }
+    }
+    function displaySensorPosition(sensorId) {
+        var sensor;
+        for(var i = 0; i < allData.sensors.length; i++) {
+            if (allData.sensors[i].id === sensorId) {
+                sensor = {
+                    'title': allData.sensors[i].id,
+                    'lat': allData.sensors[i].latitude,
+                    'lng': allData.sensors[i].longitude
+                };
+                break;
+            }
+        }
+        deleteMarkers();
+        var sensorPos = {lat: sensor.lat, lng: sensor.lng};
+        addMarker(sensorPos, sensor.title.toString());
+        showMarkers();
+    }
+    function displaySensorsPositionInCluster(clusterId) {
+        var sensorPos = [];
+        if (allData.clusters.length > 0) {
+            for (var i = 0; i < allData.sensors.length; i++) {
+                if (allData.sensors[i].operation && allData.sensors[i].cluster_id_id === clusterId) {
+                    var sensor = {
+                        'title': allData.sensors[i].id,
+                        'lat': allData.sensors[i].latitude,
+                        'lng': allData.sensors[i].longitude
+                    };
+                    sensorPos.push(sensor);
+                }
+            }
+        }
+        deleteMarkers();
+        if (sensorPos.length > 0) {
+            for (var i = 0; i < sensorPos.length; i++) {
+                var sensorPosition = {lat: sensorPos[i].lat, lng: sensorPos[i].lng};
+                addMarker(sensorPosition, sensorPos[i].title.toString());
+            }
+        }
+        showMarkers();
+    }
+    function addMarker(location, title) {
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map,
+            title: title
+        });
+        markers.push(marker);
+    }
+    function setMapOnAll(map) {
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(map);
+        }
+    }
+    function clearMarkers() {
+        setMapOnAll(null);
+    }
+
+    function showMarkers() {
+        setMapOnAll(map);
+    }
+    function deleteMarkers() {
+        clearMarkers();
+        markers = [];
+    }
+    function initMap() {
+        var sensorPos = [];
+        if (allData.clusters.length > 0) {
+            var clusterId = allData.clusters[0].id;
+            for (var i = 0; i < allData.sensors.length; i++) {
+                if (!allData.sensors[i].operation || allData.sensors[i].cluster_id_id != clusterId) {
+                    continue;
+                } else {
+                    var sensor = {
+                        'id': allData.sensors[i].id,
+                        'lat': allData.sensors[i].latitude,
+                        'lng': allData.sensors[i].longitude
+                    };
+                    sensorPos.push(sensor);
+                }
+            }
+        }
+        var centerLatLng = {lat: -25.363, lng: 131.044};
+        if (sensorPos.length > 0) {
+            centerLatLng = {lat: sensorPos[0]['lat'], lng: sensorPos[0]['lng']};
+        }
+        map = new google.maps.Map(document.getElementById('googleMap'), {
+            zoom: 10,
+            center: centerLatLng
+        });
+
+        if (sensorPos.length > 0) {
+            for (var i = 0; i < sensorPos.length; i++) {
+                var sensorPosition = {lat: sensorPos[i].lat, lng: sensorPos[i].lng};
+                addMarker(sensorPosition, sensorPos[i].id.toString());
+            }
+        }
+    }
+    $(document).ready(
+        getAllSensorsClustersData(),
+        function () {
+            allData = document.getElementById("allData").value;
+            $.notify({
+                icon: 'pe-7s-gift',
+                message: "Welcome to <b>Sensor Cloud Security</b>"
+
+            }, {
+                type: 'info',
+                timer: 2000
+            });
+        }
+    );
+
+</script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBpWEG7Atq6wHvBKRNL6mtUsM-0d5va4SA&callback=initMap"></script>
+
+{% endblock %}

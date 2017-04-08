@@ -1,0 +1,97 @@
+<div class="content-heading">Sensor Monitor
+   <small>Description</small>
+</div>
+
+<div class="panel panel-default">
+<!-- START panel-->
+        <div class="panel panel-default">
+            <!-- START table-responsive-->
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>id</th>
+                            <th>Activity</th>
+                            <th>Completion</th>
+                            <th>Take action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Bootstrap 5.x</td>
+                            <td>
+                                <div sparkline attr.data-bar-color="{{colorByName('primary')}}" data-height="20" data-bar-width="5" data-bar-spacing="2" values="1,4,4,7,5,9,10" data-resize="true"></div>
+                            </td>
+                            <td>
+                                <div class="label label-danger">Canceled</div>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" uib-dropdown="dropdown">
+                                    <button class="btn btn-default btn-xs" type="button" ng-disabled="disabled" uib-dropdown-toggle="">
+                                        <em class="fa fa-angle-down fa-fw"></em>Action</button>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li><a href="">OFF</a>
+                                        </li>
+                                        <li><a href="">ON</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Web Engine</td>
+                            <td>
+                                <div sparkline attr.data-bar-color="{{colorByName('purple')}}" data-height="20" data-bar-width="5" data-bar-spacing="2" values="1,4,4,10,5,9,2" data-resize="true"></div>
+                            </td>
+                            <td>
+                                <div class="label label-success">Complete</div>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" uib-dropdown="dropdown">
+                                    <button class="btn btn-default btn-xs" type="button" ng-disabled="disabled" uib-dropdown-toggle="">
+                                        <em class="fa fa-angle-down fa-fw"></em>Action</button>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li><a href="">Cancel</a>
+                                        </li>
+                                        <li><a href="">Delay</a>
+                                        </li>
+                                        <li><a href="">Re Plan </a>
+                                        </li>
+                                        <li><a href="">Invoke meeting</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Nullam sit amet</td>
+                            <td>
+                                <div sparkline attr.data-bar-color="{{colorByName('info')}}" data-height="20" data-bar-width="5" data-bar-spacing="2" values="1,4,4,7,5,9,4" data-resize="true"></div>
+                            </td>
+                            <td>
+                                <div class="label label-warning">Delayed</div>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group" uib-dropdown="dropdown">
+                                    <button class="btn btn-default btn-xs" type="button" ng-disabled="disabled" uib-dropdown-toggle="">
+                                        <em class="fa fa-angle-down fa-fw"></em>Action</button>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li><a href="">Cancel</a>
+                                        </li>
+                                        <li><a href="">Delay</a>
+                                        </li>
+                                        <li><a href="">Re Plan </a>
+                                        </li>
+                                        <li><a href="">Invoke meeting</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- END table-responsive-->
+        </div>
+        <!-- END panel-->
+</div>

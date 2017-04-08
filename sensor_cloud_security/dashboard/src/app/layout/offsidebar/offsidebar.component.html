@@ -1,0 +1,39 @@
+<h3 class="text-center text-thin"  [innerHTML]="'offsidebar.setting.SETTINGS' | translate"></h3>
+<div class="p">
+    <h4 class="text-muted text-thin">Themes</h4>
+    <div class="table-grid mb">
+        <div class="col mb">
+            <div class="setting-color">
+                <label>
+                    <input type="radio" name="setting-theme" [(ngModel)]="currentTheme" (ngModelChange)="setTheme()" value="A" />
+                    <span class="icon-check"></span>
+                    <span class="split">
+                  <span class="color bg-info"></span>
+                    <span class="color bg-info-light"></span>
+                    </span>
+                    <span class="color bg-white"></span>
+                </label>
+            </div>
+        </div>
+        <div class="col mb">
+            <div class="setting-color">
+                <label>
+                    <input type="radio" name="setting-theme" [(ngModel)]="currentTheme" (ngModelChange)="setTheme()" value="E" />
+                    <span class="icon-check"></span>
+                    <span class="split">
+                  <span class="color bg-info-dark"></span>
+                    <span class="color bg-info"></span>
+                    </span>
+                    <span class="color bg-gray-dark"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="p">
+    <h4 class="text-muted text-thin">Language</h4>
+    <select class="form-control" [ngModel]="selectedLanguage" (ngModelChange)="setLang($event)">
+        <option [value]="lang.code" *ngFor="let lang of getLangs()">{{lang.text}}</option>
+    </select>
+</div>
